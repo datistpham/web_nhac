@@ -1,0 +1,8 @@
+.c-flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.component-song:hover {
+    background-color: #3f5472 !important;
+}

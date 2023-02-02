@@ -1,0 +1,125 @@
+/* eslint-disable array-callback-return */
+/* eslint-disable no-unused-vars */
+import { useContext, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import classNames from 'classnames/bind';
+import styles from './MainSongRebuild.module.scss';
+
+import SongItem from '../SongItem';
+import {
+    setCurrnetIndexSong,
+    setInfoSongPlayer,
+    setIsPlay,
+    setPlaylistRandom,
+    setSongId,
+    setCurrentIndexSongRandom,
+    setSrcAudio,
+    setCurrentTime,
+} from '~/redux/features/audioSlice';
+import SongItemRebuild from '../SongItem/SongItemRebuild';
+import { AppContext } from '~/App';
+
+const cx = classNames.bind(styles);
+
+function MainSongRebuild() {
+    const {suggestSong }= useContext(AppContext)
+    const dispatch = useDispatch();
+    const currentSong = useSelector((state) => state.audio.infoSongPlayer);
+    const currentIndexSong = useSelector((state) => state.audio.currentIndexSong);
+    const currentIndexSongRandom = useSelector((state) => state.audio.currentIndexSongRandom);
+    const isRandom = useSelector((state) => state.audio.isRandom);
+    const playlist = [...useSelector((state) => state.audio.playlistSong)];
+    const playlistRandom = [...useSelector((state) => state.audio.playlistRandom)];
+    // console.log(playlistRandom)
+    function shuffle(array) {
+        var currentIndex = array.length,
+            temporaryValue,
+            randomIndex;
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+
+    const handlePlaySong = (playlist, randomPlaylist, song, index) => {
+        let indexSong = playlist.findIndex((item) => item.encodeId === song.encodeId);
+        let randomIndexSong = playlistRandom.findIndex((item) => item.encodeId === song.encodeId);
+        dispatch(setCurrentIndexSongRandom(randomIndexSong));
+        dispatch(setCurrnetIndexSong(indexSong));
+        dispatch(setInfoSongPlayer(song));
+        dispatch(setSongId(song.encodeId));
+        dispatch(setSrcAudio(''));
+        dispatch(setCurrentTime(0));
+        dispatch(setIsPlay(true));
+    };
+
+    useEffect(() => {   
+        if (isRandom) {
+            dispatch(setPlaylistRandom(shuffle([...playlistRandom])));
+            dispatch(setCurrentIndexSongRandom(-1));
+        }
+    }, [isRandom, dispatch]);
+
+    return (
+        <div className={cx('wrapper')}>
+            <div className={cx('header')} style={{zIndex: 99}}>
+                <h1 className={cx('title')} style={{fontSize: 20}}>Bài hát được gợi ý cho bạn</h1>
+            </div>
+            <div className={cx('content')}>
+                <div className={cx('next-list')}>
+                    {/* <div>
+                        {
+                            suggestSong?.length <= 0 && <SongItem type="mini" data={currentSong} className={cx('current-song')} />
+                        }
+                    </div> */}
+                    {/* {isRandom
+                        ? playlistRandom.map((song, index) => {
+                              if (song.streamingStatus !== 1 || currentIndexSongRandom === index) {
+                                  return;
+                              } else {
+                                  return (
+                                      index >= currentIndexSongRandom && (
+                                          <SongItem
+                                              onClick={() => handlePlaySong(playlist, playlistRandom, song, index)}
+                                              key={index}
+                                              type="mini"
+                                              data={song}
+                                          />
+                                      )
+                                  );
+                              }
+                          })
+                        : playlist.map((song, index) => {
+                              if (song.streamingStatus !== 1 || currentIndexSong === index) {
+                                  return;
+                              } else {
+                                  return (
+                                      index >= currentIndexSong && (
+                                          <SongItem
+                                              onClick={() => handlePlaySong(playlist, playlistRandom, song, index)}
+                                              key={index}
+                                              type="mini"
+                                              data={song}
+                                          />
+                                      )
+                                  );
+                              }
+                          })} */}
+                    {
+                        suggestSong?.map((item, key)=> <SongItemRebuild key={key} {...item} />)
+                    }
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default MainSongRebuild;
